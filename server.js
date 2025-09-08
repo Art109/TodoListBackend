@@ -2,12 +2,14 @@ import express from "express";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import Task from "./task.js";
+import cors from "cors";
 
 dotenv.config();
 
 const app = express();
 const PORT = 3000;
 
+app.use(cors());
 app.use(express.json());
 
 const connectDB = async () => {
@@ -61,8 +63,8 @@ app.get("/tasks", async (req, res) => {
     }
 
     const allTasks = await Task.find(filter).sort({
-      favorite: -1,
       complete: 1,
+      favorite: -1,
       color: -1,
       startDate: -1,
     });

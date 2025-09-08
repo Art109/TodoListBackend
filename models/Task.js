@@ -42,4 +42,14 @@ const TaskSchema = new mongoose.Schema({
   },
 });
 
+TaskSchema.pre("findOneAndUpdate", function (next) {
+  const update = this.getUpdate();
+
+  if (update.complete !== undefined) {
+    update.endDate = update.complete ? new Date() : null;
+  }
+
+  next();
+});
+
 export default mongoose.model("Task", TaskSchema);
