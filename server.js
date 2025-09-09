@@ -1,7 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
-import Task from "./task.js";
+import Task from "./models/task.js";
 import cors from "cors";
 
 dotenv.config();
