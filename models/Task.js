@@ -5,20 +5,26 @@ const TaskSchema = new mongoose.Schema({
     type: String,
     required: [true, "The task name is needed"],
     trim: true,
-    maxLength: [100, "The name must have less than 100 characters"],
+    validate: {
+      validator: function (value) {
+        return value.trim().length > 0;
+      },
+      message: "O nome da tarefa não pode conter apenas espaços em branco",
+    },
+    maxLength: [50, "O nome não pode passar de 50 caracteres"],
   },
 
   description: {
     type: String,
     default: "",
     trim: true,
-    maxLength: [500, "The name must have less than 500 characters"],
+    maxLength: [500, "A descrição não pode passar 500 caracteres"],
   },
 
   color: {
     type: Number,
-    min: [0, "The color index can't be less than 0"],
-    max: [5, "The color index can't be higher than 0"],
+    min: [0, "o indice de cores não pode ser menor 0"],
+    max: [5, "o indice de cores não pdoe ser maior que 5"],
   },
 
   favorite: {
@@ -40,6 +46,13 @@ const TaskSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+});
+
+TaskSchema.pre("save", function (next) {
+  if (this.name) {
+    this.name = this.name.trim();
+  }
+  next();
 });
 
 TaskSchema.pre("findOneAndUpdate", function (next) {

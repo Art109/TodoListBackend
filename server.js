@@ -28,6 +28,18 @@ app.post("/tasks", async (req, res) => {
   const { name, description, color, favorite, startDate } = req.body;
 
   try {
+    if (!name || name.trim().length === 0) {
+      return res.status(400).json({
+        error: "Nome da tarefa é obrigatório e não pode conter apenas espaços",
+      });
+    }
+
+    if (name.length > 100) {
+      return res.status(400).json({
+        error: "O nome da tarefa deve ter no máximo 50 caracteres",
+      });
+    }
+
     const newTask = new Task({
       name: name,
       description: description || "",
@@ -41,7 +53,7 @@ app.post("/tasks", async (req, res) => {
     const savedTask = await newTask.save();
 
     res.status(201).json(savedTask);
-    console.log("Task created", savedTask);
+    //console.log("Task created", savedTask);
   } catch (error) {
     console.error("Error creating task:", error);
     res.status(500).json({ error: "Failed to create task" });
@@ -70,7 +82,7 @@ app.get("/tasks", async (req, res) => {
     });
 
     res.status(200).json(allTasks);
-    console.log("All tasks fetched:", allTasks.length);
+    //console.log("All tasks fetched:", allTasks.length);
   } catch (error) {
     console.error("Error fetching tasks:", error);
     res.status(500).json({ error: "Failed to fetch tasks" });
@@ -89,7 +101,7 @@ app.get("/tasks/:id", async (req, res) => {
     }
 
     res.status(200).json(task);
-    console.log("Task found", task);
+    //console.log("Task found", task);
   } catch (error) {
     console.error("Error fetching task", error);
     res.status(500).json({ error: "Failed to fetch task" });
@@ -113,7 +125,7 @@ app.put("/tasks/:id", async (req, res) => {
     }
 
     res.status(200).json(updatedTask);
-    console.log("Task updated", updatedTask);
+    //console.log("Task updated", updatedTask);
   } catch (error) {
     console.error("Error updating task:", error);
     res.status(500).json({ error: "Failed to update task" });
@@ -134,11 +146,36 @@ app.delete("/tasks/:id", async (req, res) => {
 
     res.status(200).json({ message: "Task found", deletedTask: deletedTask });
 
-    console.log("Task deleted", deletedTask);
+    //console.log("Task deleted", deletedTask);
   } catch (error) {
     console.error("Error deleting task", error);
     res.status(500).json({ error: "Failed to delete task" });
   }
+});
+
+app.use((error, req, res, next) => {
+  console.error("Error:", error);
+
+  // Erro de validação do Mongoose
+  if (error.name === "ValidationError") {
+    const errors = Object.values(error.errors).map((err) => err.message);
+    return res.status(400).json({
+      error: "Dados inválidos",
+      details: errors,
+    });
+  }
+
+  // Erro de cast (ObjectId inválido)
+  if (error.name === "CastError") {
+    return res.status(400).json({
+      error: "ID inválido",
+    });
+  }
+
+  // Erro genérico
+  res.status(500).json({
+    error: "Erro interno do servidor",
+  });
 });
 
 app.listen(PORT, () => console.log(`The server is running on port ${PORT}`));
